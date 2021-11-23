@@ -20,6 +20,8 @@ public class Manager : MonoBehaviour
     float timer;
     bool started;
     bool canSearch;
+    bool reachThePoint;
+
 
     int G = 0;
     int N = 0;
@@ -55,7 +57,7 @@ public class Manager : MonoBehaviour
             Debug.Log(startPosition);
             // Debug.Log(endPosition);
             AStar(firstTile, endPosition);
-            
+
 
         }
         if (canSearch)
@@ -123,11 +125,46 @@ public class Manager : MonoBehaviour
 
         return nodes;
     }
+    public void CheckToAddNodeToOpenList(TileBase tileBase, Node currentNode, Vector3Int direction, int G,out bool  reachThePoint)
+    {
+        reachThePoint = false;
+        if (tileBase.name == endTile.name)
+        {
+            canSearch = true;
+            reachThePoint = true;
+        }
+        if (tileBase.name != wallsTile.name && tileBase.name == whiteTile.name) // check if its not wall and its white wall
+        {
+            bool find = false;
+            Node node = new Node(G, H_Calculatior(currentNode.GetPos() + direction, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + direction, endPosition), G), currentNode.GetPos() + direction);
+            for (int i = 0; i < closeList.Count; i++)
+            {
+
+                if (closeList[i].GetPos() == node.GetPos())
+                {
+                    find = true;
+                    break;
+                }
+            }
+            for (int i = 0; i < openList.Count; i++)
+            {
+                if (openList[i].GetPos() == node.GetPos())
+                {
+                    find = true;
+                    break;
+                }
+            }
+            if (!find)
+            {
+                openList.Add(node);
+            }
+        }
+    }
     public void AStar(Node currentNode, Vector3Int endPosition)
     {
 
         bool reachThePoint = false;
-        G= currentNode.G;
+        G = currentNode.G;
         Vector3Int right = new Vector3Int(1, 0, 0);
         Vector3Int left = new Vector3Int(-1, 0, 0);
         Vector3Int up = new Vector3Int(0, 1, 0);
@@ -138,175 +175,27 @@ public class Manager : MonoBehaviour
         TileBase upTile = white.GetTile(currentNode.GetPos() + up);
         TileBase downTile = white.GetTile(currentNode.GetPos() + down);
 
-
+        //(TileBase tileBase ,Vector3Int direction,int G)
 
         if (rightTile) // check if tile is not null 
         {
-
-            if (rightTile.name == endTile.name)
-            {
-                canSearch = true;
-                reachThePoint = true;
-                return;
-
-            }
-            if (rightTile.name != wallsTile.name && rightTile.name == whiteTile.name) // check if its not wall and its white wall
-            {
-                bool find = false;
-                Node nextOpenRight = new Node(G, H_Calculatior(currentNode.GetPos() + right, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + right, endPosition), G), currentNode.GetPos() + right);
-                for (int i = 0; i < closeList.Count; i++)
-                {
-
-                    if (closeList[i].GetPos() == nextOpenRight.GetPos())
-                    {
-                        find = true;
-                        break;
-
-                    }
-
-
-                }
-                for (int i = 0; i < openList.Count; i++)
-                {
-                    if (openList[i].GetPos() == nextOpenRight.GetPos())
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (!find)
-                {
-                    openList.Add(nextOpenRight);
-
-                }
-
-            }
-
+            CheckToAddNodeToOpenList(rightTile, currentNode, right, G,out reachThePoint);
+  
         }
 
         if (leftTile)
         {
+            CheckToAddNodeToOpenList(leftTile, currentNode, left, G,out reachThePoint);
 
-            if (leftTile.name == endTile.name)
-            {
-                canSearch = true;
-                reachThePoint = true;
-                return;
-
-            }
-            if (leftTile.name != wallsTile.name && leftTile.name == whiteTile.name)
-            {
-                bool find = false;
-                Node nextOpenLeft = new Node(G, H_Calculatior(currentNode.GetPos() + left, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + left, endPosition), G), currentNode.GetPos() + left);
-                for (int i = 0; i < closeList.Count; i++)
-                {
-                    if (closeList[i].GetPos() == nextOpenLeft.GetPos())
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                for (int i = 0; i < openList.Count; i++)
-                {
-                    if (openList[i].GetPos() == nextOpenLeft.GetPos())
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (!find)
-                {
-                    openList.Add(nextOpenLeft);
-
-                }
-            }
         }
         if (upTile)
         {
-            if (upTile.name == endTile.name)
-            {
-                canSearch = true;
-                reachThePoint = true;
-                return;
-
-            }
-            if (upTile.name != wallsTile.name && upTile.name == whiteTile.name)
-            {
-                bool find = false;
-                Node nextOpenUp = new Node(G, H_Calculatior(currentNode.GetPos() + up, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + up, endPosition), G), currentNode.GetPos() + up);
-                for (int i = 0; i < closeList.Count; i++)
-                {
-
-
-                    if (closeList[i].GetPos() == nextOpenUp.GetPos())
-                    {
-                        find = true;
-                        break;
-
-                    }
-
-
-                }
-                for (int i = 0; i < openList.Count; i++)
-                {
-                    if (openList[i].GetPos() == nextOpenUp.GetPos())
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (!find)
-                {
-                    openList.Add(nextOpenUp);
-
-                }
-
-            }
+            CheckToAddNodeToOpenList(upTile, currentNode, up, G,out reachThePoint);
 
         }
         if (downTile)
         {
-            if (downTile.name == endTile.name)
-            {
-
-                reachThePoint = true;
-                return;
-
-            }
-            if (downTile.name != wallsTile.name && downTile.name == whiteTile.name)
-            {
-                bool find = false;
-                Node nextOpenDown = new Node(G, H_Calculatior(currentNode.GetPos() + down, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + down, endPosition), G), currentNode.GetPos() + down);
-                for (int i = 0; i < closeList.Count; i++)
-                {
-
-                    if (closeList[i].GetPos() == nextOpenDown.GetPos())
-                    {
-                        find = true;
-                        break;
-
-                    }
-
-
-
-                }
-                for (int i = 0; i < openList.Count; i++)
-                {
-                    if (openList[i].GetPos() == nextOpenDown.GetPos())
-                    {
-                        find = true;
-                        break;
-                    }
-                }
-                if (!find)
-                {
-                    openList.Add(nextOpenDown);
-
-                }
-
-
-            }
-
+            CheckToAddNodeToOpenList(downTile, currentNode, down, G,out reachThePoint);
         }
         for (int i = 0; i < closeList.Count; i++)
         {
@@ -319,9 +208,7 @@ public class Manager : MonoBehaviour
             for (int i = 0; i < openList.Count; i++)
             {
                 array[i] = openList[i].GetF();
-
             }
-
         }
         Node posForNextAstar = null;
         for (int i = 0; i < openList.Count; i++)
@@ -332,30 +219,18 @@ public class Manager : MonoBehaviour
                 closeList.Add(openList[i]);
                 white.SetTile(openList[i].GetPos(), null);
                 openList.Remove(openList[i]);
-
                 break;
             }
-
-
         }
-
         if (!reachThePoint)
         {
             StartCoroutine(Wait(0.1f, posForNextAstar));
-
-
         }
         else
         {
             Debug.Log("ali");
-            
             return;
         }
-
-
-
-
-
     }
     IEnumerator Wait(float waitTime, Node posForNextAstar)
     {
