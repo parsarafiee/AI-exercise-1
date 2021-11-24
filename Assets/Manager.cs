@@ -11,7 +11,8 @@ public class Manager : MonoBehaviour
     public Tile wallsTile;
     public Tile whiteTile;
     public Tile endTile;
-    public Tile pathFindingTile;
+    public Tile closeTile;
+    public Tile openTile;
 
 
     public float timeToAdd = 1;
@@ -125,15 +126,18 @@ public class Manager : MonoBehaviour
 
         return nodes;
     }
-    public void CheckToAddNodeToOpenList(TileBase tileBase, Node currentNode, Vector3Int direction, int G,out bool  reachThePoint)
+    public void CheckToAddNodeToOpenList(TileBase tileBase, Node currentNode, Vector3Int direction, int G, out bool reachThePoint)
     {
         reachThePoint = false;
+        //check if we reached the destination
         if (tileBase.name == endTile.name)
         {
             canSearch = true;
             reachThePoint = true;
         }
-        if (tileBase.name != wallsTile.name && tileBase.name == whiteTile.name) // check if its not wall and its white wall
+
+
+        if (tileBase.name == whiteTile.name) // check if its not wall and its white wall
         {
             bool find = false;
             Node node = new Node(G, H_Calculatior(currentNode.GetPos() + direction, endPosition), F_Calculatior(H_Calculatior(currentNode.GetPos() + direction, endPosition), G), currentNode.GetPos() + direction);
@@ -157,6 +161,8 @@ public class Manager : MonoBehaviour
             if (!find)
             {
                 openList.Add(node);
+                ChangeATile(white, node.GetPos(), openTile);
+
             }
         }
     }
@@ -179,27 +185,27 @@ public class Manager : MonoBehaviour
 
         if (rightTile) // check if tile is not null 
         {
-            CheckToAddNodeToOpenList(rightTile, currentNode, right, G,out reachThePoint);
-  
+            CheckToAddNodeToOpenList(rightTile, currentNode, right, G, out reachThePoint);
+
         }
 
         if (leftTile)
         {
-            CheckToAddNodeToOpenList(leftTile, currentNode, left, G,out reachThePoint);
+            CheckToAddNodeToOpenList(leftTile, currentNode, left, G, out reachThePoint);
 
         }
         if (upTile)
         {
-            CheckToAddNodeToOpenList(upTile, currentNode, up, G,out reachThePoint);
+            CheckToAddNodeToOpenList(upTile, currentNode, up, G, out reachThePoint);
 
         }
         if (downTile)
         {
-            CheckToAddNodeToOpenList(downTile, currentNode, down, G,out reachThePoint);
+            CheckToAddNodeToOpenList(downTile, currentNode, down, G, out reachThePoint);
         }
         for (int i = 0; i < closeList.Count; i++)
         {
-            white.SetTile(closeList[i].GetPos(), pathFindingTile);
+            white.SetTile(closeList[i].GetPos(), closeTile);
 
         }
         int[] array = new int[openList.Count];
@@ -211,17 +217,22 @@ public class Manager : MonoBehaviour
             }
         }
         Node posForNextAstar = null;
+        int minF = Mathf.Min(array);
         for (int i = 0; i < openList.Count; i++)
         {
-            if (Mathf.Min(array) == openList[i].GetF())
+            if (minF == openList[i].GetF())
             {
                 posForNextAstar = openList[i];
+
                 closeList.Add(openList[i]);
-                white.SetTile(openList[i].GetPos(), null);
+                ChangeATile(white, openList[i].GetPos(), closeTile);
+
                 openList.Remove(openList[i]);
                 break;
             }
         }
+
+
         if (!reachThePoint)
         {
             StartCoroutine(Wait(0.1f, posForNextAstar));
@@ -277,4 +288,9 @@ public class Manager : MonoBehaviour
 
     }
 
+    public void ChangeATile(Tilemap tilemap, Vector3Int pos, Tile newTile)
+    {
+        tilemap.SetTile(pos, newTile);
+
+    }
 }
